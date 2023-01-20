@@ -24,7 +24,7 @@ public class CustomerDAOimpl implements CustomerDAO {
                 Connection co = ConnectionFactory.createConnection();
                 PreparedStatement stmt = co.prepareStatement(sql);
         ) {
-            stmt.setLong(1, entity.getId());
+            stmt.setString(1, entity.getId());
             stmt.setString(2, entity.getAddress());
             stmt.setString(3, entity.getCity());
             stmt.setString(4, entity.getCompanyName());
@@ -65,29 +65,31 @@ public class CustomerDAOimpl implements CustomerDAO {
     }
 
     @Override
-    public Optional<Customer> getOne(Long id) {
+    public Optional<Customer> getOne(String id) {
         String sql = """
                 SELECT *
                 FROM Customers
-                WHERE Customer_id = 
-                """ + id;
+                WHERE Customer_id = ?
+                """;
 
-        try (
+        try(
                 Connection co = ConnectionFactory.createConnection();
-                Statement stmt = co.createStatement();
-                ResultSet rs = stmt.executeQuery(sql);
+                PreparedStatement stmt = co.prepareStatement(sql);
         ) {
+            stmt.setString(1, id);
+            ResultSet rs = stmt.executeQuery(sql);
+
             if(rs.next())
                 return Optional.of(Converter.convert(rs, Customer.class));
             else
                 return Optional.empty();
-        } catch (SQLException e) {
+        }catch (SQLException e) {
             throw new RuntimeException("error in data access", e);
         }
     }
 
     @Override
-    public void update(Long id, Customer entity) {
+    public void update(String id, Customer entity) {
         String sql = """
                 UPDATE table 
                 SET address = ?
@@ -117,7 +119,7 @@ public class CustomerDAOimpl implements CustomerDAO {
             stmt.setString(8, entity.getPhone());
             stmt.setString(9, entity.getPostalCode());
             stmt.setString(10, entity.getRegion());
-            stmt.setLong(11, id);
+            stmt.setString(11, id);
 
             stmt.executeUpdate();
         } catch (SQLException e) {
@@ -126,7 +128,7 @@ public class CustomerDAOimpl implements CustomerDAO {
     }
 
     @Override
-    public void delete(Long id) {
+    public void delete(String id) {
         String sql = """
                 DELETE FROM Customers 
                 WHERE Customer_id = ? 
@@ -136,7 +138,7 @@ public class CustomerDAOimpl implements CustomerDAO {
                 Connection co = ConnectionFactory.createConnection();
                 PreparedStatement stmt = co.prepareStatement(sql);
         ) {
-            stmt.setLong(1, id);
+            stmt.setString(1, id);
 
             stmt.executeUpdate();
         }catch (SQLException ex){
